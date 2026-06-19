@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jastip Tracker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #FAF8F5;
+      --card: #FFFFFF;
+      --rose: #D4897A;
+      --rose-light: #F0D5CE;
+      --rose-pale: #FBF0ED;
+      --sage: #7B9E87;
+      --sage-light: #D4E6DA;
+      --slate: #2C2C2C;
+      --slate-mid: #5A5A5A;
+      --slate-light: #9A9A9A;
+      --border: #EDE8E3;
+      --shadow: 0 2px 12px rgba(44,44,44,0.07);
+      --shadow-hover: 0 6px 24px rgba(44,44,44,0.12);
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--slate);
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    header {
+      background: var(--slate);
+      padding: 2rem 1.5rem 1.5rem;
+      text-align: center;
+    }
+    header .eyebrow {
+      font-size: 0.72rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--rose);
+      margin-bottom: 0.5rem;
+    }
+    header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.8rem, 5vw, 2.8rem);
+      color: #FAF8F5;
+      font-weight: 600;
+      line-height: 1.2;
+    }
+    header h1 span { color: var(--rose); }
+    header p.tagline {
+      color: var(--slate-light);
+      font-size: 0.85rem;
+      margin-top: 0.5rem;
+      font-weight: 300;
+    }
+
+    /* ── PROGRESS BAR ── */
+    .progress-section {
+      background: var(--slate);
+      padding: 0 1.5rem 1.5rem;
+    }
+    .progress-wrap {
+      max-width: 700px;
+      margin: 0 auto;
+    }
+    .progress-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 0.5rem;
+    }
+    .progress-meta .label {
+      font-size: 0.75rem;
+      color: var(--slate-light);
+      letter-spacing: 0.05em;
+    }
+    .progress-meta .count {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem;
+      color: var(--rose);
+    }
+    .progress-bar-bg {
+      background: rgba(255,255,255,0.1);
+      border-radius: 99px;
+      height: 6px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      background: linear-gradient(90deg, var(--rose), #E8A898);
+      height: 100%;
+      border-radius: 99px;
+      transition: width 0.5s ease;
+    }
+
+    /* ── CONTROLS ── */
+    .controls {
+      max-width: 760px;
+      margin: 1.5rem auto 0;
+      padding: 0 1rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      align-items: center;
+    }
+    .controls input[type="text"] {
+      flex: 1;
+      min-width: 180px;
+      padding: 0.6rem 1rem;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
+      background: var(--card);
+      color: var(--slate);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .controls input[type="text"]:focus { border-color: var(--rose); }
+    .controls select {
+      padding: 0.6rem 0.9rem;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.82rem;
+      background: var(--card);
+      color: var(--slate);
+      outline: none;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .controls select:focus { border-color: var(--rose); }
+    .btn-add {
+      padding: 0.6rem 1.2rem;
+      background: var(--rose);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      white-space: nowrap;
+    }
+    .btn-add:hover { background: #C07060; transform: translateY(-1px); }
+
+    /* ── GRID ── */
+    .grid {
+      max-width: 760px;
+      margin: 1.2rem auto 3rem;
+      padding: 0 1rem;
+      display: grid;
+      gap: 0.9rem;
+    }
+
+    /* ── CARD ── */
+    .card {
+      background: var(--card);
+      border-radius: 12px;
+      border: 1.5px solid var(--border);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+    .card:hover { box-shadow: var(--shadow-hover); transform: translateY(-1px); }
+    .card.bought { border-left: 4px solid var(--sage); }
+    .card.bought .card-body { opacity: 0.72; }
+
+    .card-body {
+      padding: 1rem 1.1rem;
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+    }
+
+    /* Checkbox */
+    .check-wrap {
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .check-wrap input[type="checkbox"] { display: none; }
+    .check-box {
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      border: 2px solid var(--rose-light);
+      background: var(--rose-pale);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+      flex-shrink: 0;
+    }
+    .check-box:hover { border-color: var(--rose); }
+    .check-box svg { display: none; }
+    input[type="checkbox"]:checked + .check-box {
+      background: var(--sage);
+      border-color: var(--sage);
+    }
+    input[type="checkbox"]:checked + .check-box svg { display: block; }
+
+    /* Card content */
+    .card-content { flex: 1; min-width: 0; }
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .item-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--slate);
+      line-height: 1.3;
+    }
+    .brand {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--rose);
+      font-weight: 600;
+      margin-bottom: 0.15rem;
+    }
+    .badge-status {
+      font-size: 0.68rem;
+      font-weight: 600;
+      padding: 0.2rem 0.6rem;
+      border-radius: 99px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .badge-status.belum {
+      background: var(--rose-pale);
+      color: var(--rose);
+    }
+    .badge-status.sudah {
+      background: var(--sage-light);
+      color: #4A7A5A;
+    }
+
+    .item-detail {
+      font-size: 0.8rem;
+      color: var(--slate-mid);
+      margin-top: 0.2rem;
+    }
+    .item-detail span { 
+      display: inline-block; 
+      margin-right: 0.6rem;
+    }
+    .detail-pill {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      padding: 0.1rem 0.5rem;
+      font-size: 0.72rem;
+      color: var(--slate-mid);
+      margin-right: 0.3rem;
+      margin-top: 0.25rem;
+      display: inline-block;
+    }
+
+    .customer-row {
+      margin-top: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+    }
+    .customer-label {
+      font-size: 0.68rem;
+      color: var(--slate-light);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .customer-name {
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--slate-mid);
+      background: var(--border);
+      border-radius: 99px;
+      padding: 0.1rem 0.55rem;
+    }
+
+    /* Alt toggle */
+    .alt-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 0.72rem;
+      color: var(--slate-light);
+      cursor: pointer;
+      margin-top: 0.5rem;
+      border: none;
+      background: none;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
+      transition: color 0.2s;
+    }
+    .alt-toggle:hover { color: var(--rose); }
+    .alt-box {
+      display: none;
+      margin-top: 0.4rem;
+      padding: 0.5rem 0.7rem;
+      background: var(--rose-pale);
+      border-left: 2px solid var(--rose-light);
+      border-radius: 0 6px 6px 0;
+      font-size: 0.78rem;
+      color: var(--slate-mid);
+    }
+    .alt-box.open { display: block; }
+
+    /* Card actions */
+    .card-actions {
+      border-top: 1px solid var(--border);
+      padding: 0.4rem 1.1rem;
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.5rem;
+    }
+    .btn-sm {
+      font-size: 0.72rem;
+      padding: 0.25rem 0.7rem;
+      border-radius: 6px;
+      border: 1.5px solid var(--border);
+      background: transparent;
+      color: var(--slate-light);
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: all 0.15s;
+    }
+    .btn-sm:hover { border-color: #E07060; color: #E07060; }
+    .btn-sm.danger:hover { border-color: #cc5555; color: #cc5555; }
+
+    /* ── MODAL ── */
+    .overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.35);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .overlay.open { display: flex; }
+    .modal {
+      background: var(--card);
+      border-radius: 14px;
+      padding: 1.5rem;
+      width: 100%;
+      max-width: 460px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+      animation: slideUp 0.2s ease;
+    }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .modal h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+      color: var(--slate);
+    }
+    .field { margin-bottom: 0.8rem; }
+    .field label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--slate-mid);
+      margin-bottom: 0.3rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .field input, .field select, .field textarea {
+      width: 100%;
+      padding: 0.55rem 0.8rem;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
+      color: var(--slate);
+      background: var(--bg);
+      outline: none;
+      transition: border-color 0.2s;
+      resize: vertical;
+    }
+    .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--rose); }
+    .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+    .modal-actions {
+      display: flex;
+      gap: 0.6rem;
+      margin-top: 1.2rem;
+      justify-content: flex-end;
+    }
+    .btn-cancel {
+      padding: 0.6rem 1.1rem;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      background: transparent;
+      color: var(--slate-light);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+    .btn-save {
+      padding: 0.6rem 1.3rem;
+      background: var(--rose);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-save:hover { background: #C07060; }
+
+    /* ── EMPTY STATE ── */
+    .empty {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--slate-light);
+    }
+    .empty svg { opacity: 0.3; margin-bottom: 0.8rem; }
+    .empty p { font-size: 0.85rem; }
+
+    /* ── FOOTER ── */
+    footer {
+      text-align: center;
+      padding: 1rem;
+      font-size: 0.72rem;
+      color: var(--slate-light);
+      border-top: 1px solid var(--border);
+    }
+
+    @media (max-width: 480px) {
+      .row2 { grid-template-columns: 1fr; }
+      .controls { gap: 0.4rem; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <p class="eyebrow">Jasa Titip Tracker</p>
+  <h1>Daftar <span>Pesanan</span></h1>
+  <p class="tagline">Pantau status barang titipan dengan mudah</p>
+</header>
+
+<div class="progress-section">
+  <div class="progress-wrap">
+    <div class="progress-meta">
+      <span class="label">Progress Pembelian</span>
+      <span class="count" id="progressCount">0 / 0 barang</span>
+    </div>
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="progressFill" style="width:0%"></div>
+    </div>
+  </div>
+</div>
+
+<div class="controls">
+  <input type="text" id="searchInput" placeholder="Cari barang atau customer…" oninput="render()" />
+  <select id="filterStatus" onchange="render()">
+    <option value="all">Semua Status</option>
+    <option value="belum">Belum Dibeli</option>
+    <option value="sudah">Sudah Dibeli</option>
+  </select>
+  <select id="filterCustomer" onchange="render()">
+    <option value="all">Semua Customer</option>
+  </select>
+  <button class="btn-add" onclick="openModal()">+ Tambah Pesanan</button>
+</div>
+
+<div class="grid" id="grid"></div>
+
+<!-- Modal -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h2 id="modalTitle">Tambah Pesanan Baru</h2>
+    <div class="field">
+      <label>Nama Customer</label>
+      <input type="text" id="fCustomer" placeholder="Nama pemesan…" />
+    </div>
+    <div class="field">
+      <label>Brand</label>
+      <input type="text" id="fBrand" placeholder="cth: Aafiya" />
+    </div>
+    <div class="field">
+      <label>Nama Produk</label>
+      <input type="text" id="fProduct" placeholder="cth: Ava" />
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label>Warna</label>
+        <input type="text" id="fColor" placeholder="cth: Sage" />
+      </div>
+      <div class="field">
+        <label>Ukuran</label>
+        <input type="text" id="fSize" placeholder="cth: L" />
+      </div>
+    </div>
+    <div class="field">
+      <label>Alternatif Pilihan <span style="font-size:0.7rem;font-weight:400;text-transform:none">(opsional)</span></label>
+      <textarea id="fAlt" rows="2" placeholder="cth: Warna Dark Green Size M"></textarea>
+    </div>
+    <div class="field">
+      <label>Catatan Tambahan <span style="font-size:0.7rem;font-weight:400;text-transform:none">(opsional)</span></label>
+      <textarea id="fNote" rows="2" placeholder="Catatan khusus untuk pesanan ini…"></textarea>
+    </div>
+    <input type="hidden" id="editId" value="" />
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Batal</button>
+      <button class="btn-save" onclick="saveItem()">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<footer>Jastip Tracker &mdash; Data tersimpan di browser Anda</footer>
+
+<script>
+  const STORAGE_KEY = 'jastip_items_v1';
+
+  const defaultItems = [
+    { id: 1, customer: 'Noi', brand: 'Aafiya', product: 'Ava', color: 'Sage', size: 'L', alt: '', note: '', bought: false },
+    { id: 2, customer: 'Farah Nur Fitriani', brand: 'Aafiya', product: 'Ayre', color: 'Basil', size: 'M', alt: 'Warna Dark Green Size M', note: '', bought: false },
+    { id: 3, customer: 'Noi', brand: 'Aafiya', product: 'Ayre', color: 'Classic Blue', size: 'L', alt: '', note: '', bought: false },
+    { id: 4, customer: 'Dina Rosliana', brand: 'Aafiya', product: 'Hana Abaya', color: 'Maroon', size: 'S', alt: 'Hana Abaya Warna Mediterania Size S', note: '', bought: false },
+    { id: 5, customer: 'Dina Rosliana', brand: 'Aafiya', product: 'Hayya Khimar', color: 'Ivory', size: 'Reguler', alt: 'Hayya Khimar Mauve Reguler', note: '', bought: false },
+    { id: 6, customer: 'Fernadhelia', brand: 'Aafiya', product: 'Ivy', color: 'Denim', size: 'S', alt: 'Noura Black Size S', note: '', bought: false },
+    { id: 7, customer: 'Dewi Arbie', brand: 'Aafiya', product: 'Noura Abaya', color: 'Black', size: 'S', alt: 'Khaira Black S / Apapun Noura Khaira', note: '', bought: false },
+    { id: 8, customer: 'Latifa Hanum', brand: 'Alfi Huraiyah', product: 'Khimar Bandana', color: 'Blue Denim', size: 'Os', alt: '', note: '', bought: false },
+    { id: 9, customer: 'Latifa Hanum', brand: 'Alfi Huraiyah', product: 'Naomi', color: 'Blue Denim', size: 'Xl', alt: '', note: '', bought: false },
+    { id: 10, customer: 'Tuti Ratnasari', brand: 'Alia Muslimah', product: 'Heera Abaya', color: 'Emerald', size: 'M', alt: '', note: '', bought: false },
+    { id: 11, customer: 'Rahmatika Fitri', brand: 'Althofunnisa', product: 'Shofi Abaya', color: 'Pistachio', size: 'M', alt: '', note: '', bought: false },
+    { id: 12, customer: 'Nurul Aini', brand: 'Bonebana', product: 'Luxee Abaya', color: 'Burgundy', size: 'L', alt: '', note: '', bought: false },
+    { id: 13, customer: 'Nurul Aini', brand: 'Bonebana', product: 'Luxee Abaya', color: 'Emerald', size: 'L', alt: '', note: '', bought: false },
+    { id: 14, customer: 'Rahma Widjajanti', brand: 'Itsar Syar\'i', product: 'Maysa', color: 'Vanillah', size: 'Xl', alt: 'maysa skydenim / tamar dusty blue', note: '', bought: false },
+    { id: 15, customer: 'Nindy Putri', brand: 'Itsar Syar\'i', product: 'Maysa Abaya', color: 'Coffee Milk', size: 'M Long', alt: 'Chocolate / Skydenim', note: '', bought: false },
+    { id: 16, customer: 'Dewi Melda', brand: 'Itsar Syar\'i', product: 'Maysa Abaya', color: 'Coffee Milk', size: 'Xs', alt: '', note: '', bought: false },
+    { id: 17, customer: 'Anisa Utami', brand: 'Itsar Syar\'i', product: 'Sabya', color: 'Drift Wood', size: 'S', alt: 'Sabya Warna Lain Size S', note: '', bought: false },
+    { id: 18, customer: 'Rahma Widjajanti', brand: 'Itsar Syar\'i', product: 'Sabya', color: 'Plum', size: 'Xl', alt: '', note: '', bought: false },
+    { id: 19, customer: 'Maryam / Syifa', brand: 'Itsar Syar\'i', product: 'Sabya Abaya', color: 'Black Plum', size: 'M', alt: 'Maysa Sky Denim Size M', note: '', bought: false },
+    { id: 20, customer: 'Dwi Handayani', brand: 'Itsar Syar\'i', product: 'Sabya Abaya', color: 'Drifwood Taupe', size: 'S', alt: '', note: '', bought: false },
+    { id: 21, customer: 'Dwi Handayani', brand: 'Kaffah Zeeaudrey', product: 'Allura Abaya', color: 'Petal Pink', size: 'M', alt: 'Kaffah', note: '', bought: false },
+    { id: 22, customer: 'Frida Kusumawati', brand: 'Kaffah Zeeaudrey', product: 'Haifa Abaya', color: 'After Dark', size: 'Xs', alt: '', note: '', bought: false },
+    { id: 23, customer: 'Frida Kusumawati', brand: 'Kaffah Zeeaudrey', product: 'Khimar Bandana Long Lancip', color: 'After Dark', size: 'Os', alt: '', note: '', bought: false },
+    { id: 24, customer: 'Herlia', brand: 'Kaffah Zeeaudrey', product: 'Moira Abaya', color: 'Dark Maroon', size: 'L', alt: '', note: '', bought: false },
+    { id: 25, customer: 'Herlia', brand: 'Kaffah Zeeaudrey', product: 'Moira Abaya', color: 'Fuschia', size: 'L', alt: '', note: '', bought: false },
+    { id: 26, customer: 'Nurul Aini', brand: 'Kaffah Zeeaudrey', product: 'Moira Abaya', color: 'Fuscia', size: 'L', alt: '', note: '', bought: false },
+    { id: 27, customer: 'Nurul Aini', brand: 'Kaffah Zeeaudrey', product: 'Moira Abaya', color: 'Teal', size: 'L', alt: '', note: '', bought: false },
+    { id: 28, customer: 'Zaimah (Ig)', brand: 'Madeena', product: 'Qisya Abaya', color: 'Wine', size: 'M', alt: '', note: '', bought: false },
+    { id: 29, customer: 'Sri Astuti Lubis IG', brand: 'Nehhat', product: 'Abaya Nuvel Ribelle', color: 'Magenta', size: 'M', alt: 'Burgundi M', note: '', bought: false },
+    { id: 30, customer: 'Wan Firna Utami', brand: 'Raurih', product: 'Aish Khiban', color: 'Fawn', size: 'All Size', alt: '', note: '', bought: false },
+    { id: 31, customer: 'Mayrina Susanto', brand: 'Sabina Selly', product: 'Nura Abaya', color: 'Chocolate Brown', size: 'M', alt: '', note: '', bought: false },
+    { id: 32, customer: 'Putri Hasan', brand: 'Sabina Selly', product: 'Sora Stripes', color: 'Thunder', size: 'L', alt: 'Sabina', note: '', bought: false },
+    { id: 33, customer: 'Fatin Nur Jauhara', brand: 'Saysara', product: 'Dune Chic', color: 'Butter Yellow', size: 'M', alt: 'Saysara Teeqa Button Brownie M', note: '', bought: false },
+    { id: 34, customer: 'Fatin Nur Jauhara', brand: 'Saysara', product: 'Dune Classic', color: 'Warm Grey', size: 'L', alt: 'Saysara Teeqa Button Brownie M', note: '', bought: false },
+    { id: 35, customer: 'Octavia Dhiastuti', brand: 'Shuwa', product: 'Leia Waterdye Baraya', color: 'Black Pesrl', size: 'S/M', alt: '', note: '', bought: false },
+    { id: 36, customer: 'Elsa Elvira IG', brand: 'Shuwa', product: 'Saura Abaya', color: 'Mahogany', size: 'L', alt: '', note: '', bought: false },
+    { id: 37, customer: 'Yuni', brand: 'Shuwa', product: 'Saura Abaya', color: 'Mahogany', size: 'L/Xl', alt: 'Taupe L/Xl', note: '', bought: false },
+    { id: 38, customer: 'Dea Annisa', brand: 'Shuwa', product: 'Saura Abaya', color: 'Mahogany', size: 'S-M', alt: '', note: '', bought: false },
+    { id: 39, customer: 'Astri Nurhidayanti', brand: 'Sofni Prive', product: 'Lyocell Khimars', color: 'Perwinkle', size: 'All Size', alt: '', note: '', bought: false },
+    { id: 40, customer: 'Astri Nurhidayanti', brand: 'Sofni Prive', product: 'Sauvage De Eterne', color: 'Black', size: 'L', alt: '', note: '', bought: false },
+    { id: 41, customer: 'Chairunnissa Anastasia', brand: 'Ta by TRZ', product: 'Lagosi Stitch', color: 'Ice Blue', size: 'Xs', alt: '', note: '', bought: false },
+    { id: 42, customer: 'Chairunnissa Anastasia', brand: 'Wear Hajar', product: 'Calla', color: 'Dark Grey', size: 'Xs', alt: '', note: '', bought: false },
+    { id: 43, customer: 'Wan Firna Utami', brand: 'Wear Hajar', product: 'Meet Amie', color: 'Yellow', size: 'Xs', alt: 'jalma linen khale mushroom M', note: '', bought: false },
+    { id: 44, customer: 'Ivanda Arifianto', brand: 'Wear Hajar', product: 'Nurea', color: 'Dahlia Yellow', size: 'L', alt: '', note: '', bought: false },
+    { id: 45, customer: 'Indah T. W IG', brand: 'Zaliika Wear', product: 'Haneen Abaya', color: 'Dark Pink', size: 'Xl', alt: '', note: '', bought: false },
+  ];
+
+  let items = load();
+  let nextId = items.length ? Math.max(...items.map(i => i.id)) + 1 : 1;
+
+  function load() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : defaultItems;
+    } catch { return defaultItems; }
+  }
+
+  function save() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+  }
+
+  function getFiltered() {
+    const search = document.getElementById('searchInput').value.toLowerCase();
+    const status = document.getElementById('filterStatus').value;
+    const cust = document.getElementById('filterCustomer').value;
+    return items.filter(item => {
+      const matchSearch = !search || [item.customer, item.brand, item.product, item.color, item.size, item.alt, item.note]
+        .some(v => v && v.toLowerCase().includes(search));
+      const matchStatus = status === 'all' || (status === 'sudah' ? item.bought : !item.bought);
+      const matchCust = cust === 'all' || item.customer === cust;
+      return matchSearch && matchStatus && matchCust;
+    });
+  }
+
+  function updateCustomerFilter() {
+    const sel = document.getElementById('filterCustomer');
+    const current = sel.value;
+    const names = [...new Set(items.map(i => i.customer).filter(Boolean))].sort();
+    sel.innerHTML = '<option value="all">Semua Customer</option>' +
+      names.map(n => `<option value="${esc(n)}" ${n === current ? 'selected' : ''}>${esc(n)}</option>`).join('');
+  }
+
+  function updateProgress() {
+    const total = items.length;
+    const done = items.filter(i => i.bought).length;
+    const pct = total ? Math.round((done / total) * 100) : 0;
+    document.getElementById('progressCount').textContent = `${done} / ${total} barang`;
+    document.getElementById('progressFill').style.width = pct + '%';
+  }
+
+  function esc(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function render() {
+    updateCustomerFilter();
+    updateProgress();
+    const filtered = getFiltered();
+    const grid = document.getElementById('grid');
+
+    if (!filtered.length) {
+      grid.innerHTML = `<div class="empty">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/></svg>
+        <p>Tidak ada pesanan yang ditemukan.</p>
+      </div>`;
+      return;
+    }
+
+    grid.innerHTML = filtered.map(item => {
+      const bought = item.bought;
+      const statusLabel = bought ? 'Sudah Dibeli' : 'Belum Dibeli';
+      const statusClass = bought ? 'sudah' : 'belum';
+      const hasAlt = item.alt && item.alt.trim();
+      const hasNote = item.note && item.note.trim();
+
+      return `<div class="card ${bought ? 'bought' : ''}" id="card-${item.id}">
+        <div class="card-body">
+          <div class="check-wrap">
+            <input type="checkbox" id="chk-${item.id}" ${bought ? 'checked' : ''} onchange="toggleBought(${item.id})" />
+            <label class="check-box" for="chk-${item.id}">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+            </label>
+          </div>
+          <div class="card-content">
+            <div class="card-top">
+              <div>
+                <div class="brand">${esc(item.brand)}</div>
+                <div class="item-name">${esc(item.product)}</div>
+              </div>
+              <span class="badge-status ${statusClass}">${statusLabel}</span>
+            </div>
+            <div style="margin-top:0.35rem;">
+              <span class="detail-pill">🎨 ${esc(item.color)}</span>
+              <span class="detail-pill">📐 ${esc(item.size)}</span>
+            </div>
+            <div class="customer-row">
+              <span class="customer-label">Untuk</span>
+              <span class="customer-name">${esc(item.customer)}</span>
+            </div>
+            ${hasAlt ? `
+            <button class="alt-toggle" onclick="toggleAlt(${item.id})">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+              Alternatif pilihan
+            </button>
+            <div class="alt-box" id="alt-${item.id}">💡 ${esc(item.alt)}</div>
+            ` : ''}
+            ${hasNote ? `<div style="margin-top:0.4rem;font-size:0.75rem;color:var(--slate-light);font-style:italic;">📝 ${esc(item.note)}</div>` : ''}
+          </div>
+        </div>
+        <div class="card-actions">
+          <button class="btn-sm" onclick="editItem(${item.id})">Edit</button>
+          <button class="btn-sm danger" onclick="deleteItem(${item.id})">Hapus</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  function toggleBought(id) {
+    const item = items.find(i => i.id === id);
+    if (item) { item.bought = !item.bought; save(); render(); }
+  }
+
+  function toggleAlt(id) {
+    const box = document.getElementById('alt-' + id);
+    if (box) box.classList.toggle('open');
+  }
+
+  function openModal(item = null) {
+    document.getElementById('modalTitle').textContent = item ? 'Edit Pesanan' : 'Tambah Pesanan Baru';
+    document.getElementById('fCustomer').value = item ? item.customer : '';
+    document.getElementById('fBrand').value = item ? item.brand : 'Aafiya';
+    document.getElementById('fProduct').value = item ? item.product : '';
+    document.getElementById('fColor').value = item ? item.color : '';
+    document.getElementById('fSize').value = item ? item.size : '';
+    document.getElementById('fAlt').value = item ? item.alt : '';
+    document.getElementById('fNote').value = item ? item.note : '';
+    document.getElementById('editId').value = item ? item.id : '';
+    document.getElementById('overlay').classList.add('open');
+    document.getElementById('fCustomer').focus();
+  }
+
+  function closeModal() {
+    document.getElementById('overlay').classList.remove('open');
+  }
+
+  function saveItem() {
+    const customer = document.getElementById('fCustomer').value.trim();
+    const brand = document.getElementById('fBrand').value.trim();
+    const product = document.getElementById('fProduct').value.trim();
+    const color = document.getElementById('fColor').value.trim();
+    const size = document.getElementById('fSize').value.trim();
+    const alt = document.getElementById('fAlt').value.trim();
+    const note = document.getElementById('fNote').value.trim();
+    const editId = document.getElementById('editId').value;
+
+    if (!customer || !product) {
+      alert('Nama customer dan nama produk wajib diisi!');
+      return;
+    }
+
+    if (editId) {
+      const item = items.find(i => i.id == editId);
+      if (item) Object.assign(item, { customer, brand, product, color, size, alt, note });
+    } else {
+      items.push({ id: nextId++, customer, brand, product, color, size, alt, note, bought: false });
+    }
+
+    save();
+    closeModal();
+    render();
+  }
+
+  function editItem(id) {
+    const item = items.find(i => i.id === id);
+    if (item) openModal(item);
+  }
+
+  function deleteItem(id) {
+    if (!confirm('Hapus pesanan ini?')) return;
+    items = items.filter(i => i.id !== id);
+    save();
+    render();
+  }
+
+  // Close modal on overlay click
+  document.getElementById('overlay').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+  });
+
+  // Enter key in modal
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeModal();
+  });
+
+  render();
+</script>
+</body>
+</html>
